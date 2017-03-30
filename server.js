@@ -107,7 +107,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 }).then((resp) => {
                     const visionData = new vision.Request({
                         image: new vision.Image({
-                            base64: resp.data
+                            base64: new Buffer(resp.data).toString('base64')
                         }),
                         features: [
                             new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
