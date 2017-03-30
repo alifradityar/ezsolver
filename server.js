@@ -97,7 +97,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 }).catch((err) => {
                     logger.error(err);
                 });
-        } else if (imageType === 'image') {
+        } else if (messageType === 'image') {
             axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
                     headers: {
                         Authorization: `Bearer ${config.lineToken}`,
