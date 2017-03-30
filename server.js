@@ -26,6 +26,13 @@ const jsonErrorHandler = (error, req, res, next) => {
     }
 };
 
+function _imageEncode (arrayBuffer) {
+    let u8 = new Uint8Array(arrayBuffer)
+    let b64encoded = btoa([].reduce.call(new Uint8Array(arrayBuffer),function(p,c){return p+String.fromCharCode(c)},''))
+    let mimetype="image/jpeg"
+    return "data:"+mimetype+";base64,"+b64encoded
+}
+
 app.use(jsonParser);
 app.use(jsonErrorHandler);
 app.use(expressLogger);
@@ -35,58 +42,79 @@ apiRoutes.post('/lineWebhook', (req, res) => {
     events.map((event) => {
         logger.info(event);
         const replyToken = event.replyToken;
-        const messageQuery = event.message.text || 'pi';
-        // Wolframalpha
-        axios.get(`http://api.wolframalpha.com/v2/query?input=${messageQuery}&appid=${config.wolframalphaToken}`)
-            .then((resp) => {
-                // console.log(resp.data);
-                parseString(resp.data)
-                    .then((json) => {
-                        // console.log(json.queryresult.pod);
-                        const pods = json.queryresult.pod;
-                        let replyMessage = "";
-                        pods.forEach((pod) => {
-                            const title = pod['$'].title;
-                            const subPods = pod.subpod;
-                            let replyMessagePart = title + `\n` + `=====`;
-                            subPods.forEach((subPod) => {
-                                logger.info(title);
-                                logger.info(subPod.img[0]);
-                                logger.info(subPod.plaintext[0]);
-                                logger.info("====");
-                                replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
-                            });
-                            replyMessagePart + "\n";
-                            if (title === 'Input' || title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
-                                if (replyMessage.length == 0) {
-                                    replyMessage = replyMessage + replyMessagePart;
-                                } else {
-                                    replyMessage = replyMessage + "\n" + replyMessagePart;
+        const messageType = event.message.type;
+        const messageId = event.message.id;
+        if (messageType === 'text') {
+            const messageQuery = event.message.text || 'pi';
+            // Wolframalpha
+            axios.get(`http://api.wolframalpha.com/v2/query?input=${messageQuery}&appid=${config.wolframalphaToken}`)
+                .then((resp) => {
+                    // console.log(resp.data);
+                    parseString(resp.data)
+                        .then((json) => {
+                            // console.log(json.queryresult.pod);
+                            const pods = json.queryresult.pod;
+                            let replyMessage = "";
+                            pods.forEach((pod) => {
+                                const title = pod['$'].title;
+                                const subPods = pod.subpod;
+                                let replyMessagePart = title + `\n` + `=====`;
+                                subPods.forEach((subPod) => {
+                                    logger.info(title);
+                                    logger.info(subPod.img[0]);
+                                    logger.info(subPod.plaintext[0]);
+                                    logger.info("====");
+                                    replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
+                                });
+                                replyMessagePart + "\n";
+                                if (title === 'Input' || title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
+                                    if (replyMessage.length == 0) {
+                                        replyMessage = replyMessage + replyMessagePart;
+                                    } else {
+                                        replyMessage = replyMessage + "\n" + replyMessagePart;
+                                    }
                                 }
-                            }
+                            });
+                            const data = {
+                                replyToken: replyToken,
+                                messages:[{
+                                    type: "text",
+                                    text: replyMessage,
+                                }],
+                            };
+                            logger.info(data);
+                            axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                                    headers: {
+                                        Authorization: `Bearer ${config.lineToken}`,
+                                    },
+                                }).then((resp) => {
+                                    logger.info('Reply success');
+                                    logger.info(resp.data);
+                                }).catch((err) => {
+                                    logger.error(err);
+                                });;
                         });
-                        const data = {
-                            replyToken: replyToken,
-                            messages:[{
-                                type: "text",
-                                text: replyMessage,
-                            }],
-                        };
-                        logger.info(data);
-                        axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
-                                headers: {
-                                    Authorization: `Bearer ${config.lineToken}`,
-                                },
-                            }).then((resp) => {
-                                logger.info('Reply success');
-                                logger.info(resp.data);
-                            }).catch((err) => {
-                                logger.error(err);
-                            });;
-                    });
-            }).catch((err) => {
-                logger.error(err);
-            });
+                }).catch((err) => {
+                    logger.error(err);
+                });
+        } else if (imageType === 'image') {
+            axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
+                    headers: {
+                        Authorization: `Bearer ${config.lineToken}`,
+                    },
+                }).then((resp) => {
+                    logger.info(resp.data);
+                    axios.get(resp.data.pictureUrl, {
+                            responseType: 'arraybuffer' 
+                        }).then(function(result) {
+                            logger.info(_imageEncode(result.data));
+                        })
+                }).catch((err) => {
+                    logger.error(err);
+                });;
+        } else {
+            logger.warn('Unsupported type');
+        }
     });
     res.status(200).json('Ok');
 });
