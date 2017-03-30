@@ -33,6 +33,7 @@ app.use(expressLogger);
 apiRoutes.post('/lineWebhook', (req, res) => {
     const events = req.body.events || [];
     events.map((event) => {
+        console.log(event);
         const replyToken = event.replyToken;
         const messageQuery = event.message.text || 'pi';
         // Wolframalpha
@@ -46,7 +47,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         pods.forEach((pod) => {
                             const title = pod['$'].title;
                             const subPods = pod.subpod;
-                            let replyMessage = "";
+                            let replyMessage = title + `\n` + `=====`;
                             subPods.forEach((subPod) => {
                                 logger.info(title);
                                 logger.info(subPod.img[0]);
@@ -54,7 +55,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                 logger.info("====");
                                 replyMessage = replyMessage + "\n" + subPod.plaintext[0];
                             });
-                            if (title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
+                            if (title === 'Input' || title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
                                 const data = {
                                     replyToken: replyToken,
                                     messages:[{
@@ -69,7 +70,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                         },
                                     }).then((resp) => {
                                         logger.info('Reply success');
-                                        logger.info(resp);
+                                        logger.info(resp.data);
                                     }).catch((err) => {
                                         logger.error(err);
                                     });;
