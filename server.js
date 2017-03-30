@@ -33,7 +33,7 @@ app.use(expressLogger);
 apiRoutes.post('/lineWebhook', (req, res) => {
     const events = req.body.events || [];
     events.map((event) => {
-        console.log(event);
+        logger.info(event);
         const replyToken = event.replyToken;
         const messageQuery = event.message.text || 'pi';
         // Wolframalpha
