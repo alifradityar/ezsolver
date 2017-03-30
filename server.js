@@ -63,8 +63,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                     }],
                                 };
                                 logger.info(data);
-                                axios.post(`https://api.line.me/v2/bot/message/reply`, {
-                                        data: data,
+                                axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
                                         headers: {
                                             Authorization: `Bearer ${config.lineToken}`,
                                         },
