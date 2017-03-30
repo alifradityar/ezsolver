@@ -1,0 +1,25 @@
+{
+  "name": "ezsolver",
+  "version": "1.0.0",
+  "description": "Math and Chemistry Solver",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "develop": "nodemon server.js"
+  },
+  "author": "Alif Raditya Rochman",
+  "license": "UNLICENSED",
+  "repository": "https://github.com/alifradityar/mathpic",
+  "dependencies": {
+    "@google-cloud/vision": "^0.10.0",
+    "axios": "^0.15.3",
+    "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
+    "cli-color": "^1.1.0",
+    "express": "^4.14.0",
+    "winston": "^2.2.0",
+    "winston-papertrail": "^1.0.2",
+    "xml2js": "^0.4.17"
+  },
+  "devDependencies": {}
+}
