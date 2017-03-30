@@ -104,11 +104,11 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     },
                 }).then((resp) => {
                     logger.info(resp.data);
-                    axios.get(resp.data.pictureUrl, {
-                            responseType: 'arraybuffer' 
-                        }).then(function(result) {
-                            logger.info(_imageEncode(result.data));
-                        })
+                    // axios.get(resp.data.pictureUrl, {
+                    //     responseType: 'arraybuffer' 
+                    // }).then(function(result) {
+                    //     logger.info(_imageEncode(result.data));
+                    // })
                 }).catch((err) => {
                     logger.error(err);
                 });;
