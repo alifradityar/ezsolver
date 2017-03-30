@@ -7,6 +7,8 @@ const Promise = require('bluebird');
 const logger = require('./logger').logger;
 const axios = require('axios');
 const parseString = Promise.promisify(require('xml2js').parseString);
+const vision = require('node-cloud-vision-api')
+vision.init({auth: config.visionKey})
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -104,11 +106,23 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     },
                 }).then((resp) => {
                     logger.info(resp.data);
-                    // axios.get(resp.data.pictureUrl, {
-                    //     responseType: 'arraybuffer' 
-                    // }).then(function(result) {
-                    //     logger.info(_imageEncode(result.data));
-                    // })
+                    const visionData = new vision.Request({
+                        image: new vision.Image({
+                            url: resp.data.pictureUrl
+                        }),
+                        features: [
+                            new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
+                        ],
+                    })
+                    // send single request
+                    vision.annotate(visionData).then((res) => {
+                        // handling response
+                        logger.info(JSON.stringify(res.responses));
+                        const text = res.responses[0].textAnnotations[0].description;
+                        logger.info(text);
+                    }, (e) => {
+                        logger.error('Error: ', e)
+                    })
                 }).catch((err) => {
                     logger.error(err);
                 });;
@@ -116,6 +130,34 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             logger.warn('Unsupported type');
         }
     });
+    res.status(200).json('Ok');
+});
+
+apiRoutes.get('/test', (req, res) => {
+    // vision.readDocument('http://www.proprofs.com/quiz-school/upload/yuiupload/63522999.jpg')
+    //     .then((data) => {
+    //         console.log(data);
+    //         const results = data[1].responses[0].fullTextAnnotation;
+    //         console.log(results.text);
+    //     }).catch((err) => {
+    //         console.log(err);
+    //     });
+
+    const test = new vision.Request({
+        image: new vision.Image({
+            url: 'http://www.proprofs.com/quiz-school/upload/yuiupload/63522999.jpg'
+        }),
+        features: [
+            new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
+        ],
+    })
+    // send single request
+    vision.annotate(test).then((res) => {
+        // handling response
+        console.log(JSON.stringify(res.responses))
+    }, (e) => {
+        console.log('Error: ', e)
+    })
     res.status(200).json('Ok');
 });
 
