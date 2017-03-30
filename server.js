@@ -105,10 +105,9 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         Authorization: `Bearer ${config.lineToken}`,
                     },
                 }).then((resp) => {
-                    logger.info(resp.data);
                     const visionData = new vision.Request({
                         image: new vision.Image({
-                            url: resp.data.pictureUrl
+                            base64: resp.data
                         }),
                         features: [
                             new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
