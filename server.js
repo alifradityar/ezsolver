@@ -44,38 +44,45 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     .then((json) => {
                         // console.log(json.queryresult.pod);
                         const pods = json.queryresult.pod;
+                        let replyMessage = "";
                         pods.forEach((pod) => {
                             const title = pod['$'].title;
                             const subPods = pod.subpod;
-                            let replyMessage = title + `\n` + `=====`;
+                            let replyMessagePart = title + `\n` + `=====`;
                             subPods.forEach((subPod) => {
                                 logger.info(title);
                                 logger.info(subPod.img[0]);
                                 logger.info(subPod.plaintext[0]);
                                 logger.info("====");
-                                replyMessage = replyMessage + "\n" + subPod.plaintext[0];
+                                replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
                             });
+                            replyMessagePart + "\n";
                             if (title === 'Input' || title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
-                                const data = {
-                                    replyToken: replyToken,
-                                    messages:[{
-                                        type: "text",
-                                        text: replyMessage,
-                                    }],
-                                };
-                                logger.info(data);
-                                axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
-                                        headers: {
-                                            Authorization: `Bearer ${config.lineToken}`,
-                                        },
-                                    }).then((resp) => {
-                                        logger.info('Reply success');
-                                        logger.info(resp.data);
-                                    }).catch((err) => {
-                                        logger.error(err);
-                                    });;
+                                if (replyMessage.length == 0) {
+                                    replyMessage = replyMessage + replyMessagePart;
+                                } else {
+                                    replyMessage = replyMessage + "\n" + replyMessagePart;
+                                }
                             }
                         });
+                        const data = {
+                            replyToken: replyToken,
+                            messages:[{
+                                type: "text",
+                                text: replyMessage,
+                            }],
+                        };
+                        logger.info(data);
+                        axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                                headers: {
+                                    Authorization: `Bearer ${config.lineToken}`,
+                                },
+                            }).then((resp) => {
+                                logger.info('Reply success');
+                                logger.info(resp.data);
+                            }).catch((err) => {
+                                logger.error(err);
+                            });;
                     });
             }).catch((err) => {
                 logger.error(err);
