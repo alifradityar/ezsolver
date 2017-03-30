@@ -106,6 +106,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     },
                 }).then((resp) => {
                     const base64Data = "data:" + resp.headers["content-type"] + ";base64," + new Buffer(resp.data).toString('base64');
+                    logger.info("Hoi");
                     logger.info(base64Data);
                     const visionData = new vision.Request({
                         image: new vision.Image({
