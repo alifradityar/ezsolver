@@ -54,7 +54,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                 logger.info("====");
                                 replyMessage = replyMessage + "\n" + subPod.plaintext[0];
                             });
-                            if (title === 'Solution' || title === 'DecimalApproximation' || title === 'Response') {
+                            if (title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
                                 const data = {
                                     replyToken: replyToken,
                                     messages:[{
@@ -66,7 +66,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                 axios.post(`https://api.line.me/v2/bot/message/reply`, {
                                         data: data,
                                         headers: {
-                                            Authorization: config.lineToken,
+                                            Authorization: `Bearer ${config.lineToken}`,
                                         },
                                     }).then((resp) => {
                                         logger.info('Reply success');
