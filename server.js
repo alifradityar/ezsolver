@@ -54,7 +54,8 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                     // console.log(json.queryresult.pod);
                     const pods = json.queryresult.pod;
                     let replyMessage = "";
-                    pods.forEach((pod) => {
+                    let counter = 0;
+                    pods.forEach((pod, index) => {
                         const title = pod['$'].title;
                         const subPods = pod.subpod;
                         let replyMessagePart = title + `\n` + `=====`;
@@ -71,6 +72,29 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             title === 'Decimal approximation' || 
                             title === 'Response' ||
                             title === 'Result') {
+                            counter++;
+                            pods.used = true;
+                            if (replyMessage.length == 0) {
+                                replyMessage = replyMessage + replyMessagePart;
+                            } else {
+                                replyMessage = replyMessage + "\n" + replyMessagePart;
+                            }
+                        }
+                    });
+                    pods.forEach((pod, index) => {
+                        const title = pod['$'].title;
+                        const subPods = pod.subpod;
+                        let replyMessagePart = title + `\n` + `=====`;
+                        subPods.forEach((subPod) => {
+                            logger.info(title);
+                            logger.info(subPod.img[0]);
+                            logger.info(subPod.plaintext[0]);
+                            logger.info("====");
+                            replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
+                        });
+                        if (counter < 5 && !pods.used) {
+                            counter++;
+                            pods.used = true;
                             if (replyMessage.length == 0) {
                                 replyMessage = replyMessage + replyMessagePart;
                             } else {
