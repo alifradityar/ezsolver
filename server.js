@@ -209,24 +209,25 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             }).catch((err) => {
                 logger.error(err);
             });;
+        } else {
+            const data = {
+                replyToken: replyToken,
+                messages:[{
+                    type: "text",
+                    text: "Gotcha! Please wait a moment, looking for the answer...",
+                }],
+            };
+            axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                    headers: {
+                        Authorization: `Bearer ${config.lineToken}`,
+                    },
+                }).then((resp) => {
+                    logger.info('Reply success');
+                    logger.info(resp.data);
+                }).catch((err) => {
+                    logger.error(err);
+                });;
         }
-        const data = {
-            replyToken: replyToken,
-            messages:[{
-                type: "text",
-                text: "Gotcha! Please wait a moment, looking for the answer...",
-            }],
-        };
-        axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
-                headers: {
-                    Authorization: `Bearer ${config.lineToken}`,
-                },
-            }).then((resp) => {
-                logger.info('Reply success');
-                logger.info(resp.data);
-            }).catch((err) => {
-                logger.error(err);
-            });;
 
         if (messageType === 'text') {
             const messageQuery = event.message.text || 'pi';
