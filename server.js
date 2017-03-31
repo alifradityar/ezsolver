@@ -75,7 +75,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             pods[index].used = true;
                             const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/768.jpg`
                             answerColumns.push({
-                                thumbnailImageUrl: subPods[0].img[0]['$'].src,
+                                thumbnailImageUrl: imageUrl,
                                 title: title,
                                 text: replyMessagePart || title,
                                 actions: [
@@ -102,8 +102,9 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                         if (counter < 5 && !pods[index].used) {
                             counter++;
                             pods[index].used = true;
+                            const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/768.jpg`
                             answerColumns.push({
-                                thumbnailImageUrl: subPods[0].img[0]['$'].src,
+                                thumbnailImageUrl: imageUrl,
                                 title: title,
                                 text: replyMessagePart || title,
                                 actions: [
@@ -137,7 +138,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info('Reply success');
                             logger.info(resp.data);
                         }).catch((err) => {
-                            logger.error(err);
+                            logger.error(err.data);
                         });;
                 });
         }).catch((err) => {
