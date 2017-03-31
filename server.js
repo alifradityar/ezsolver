@@ -64,7 +64,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info(subPod.img[0]);
                             logger.info(subPod.plaintext[0]);
                             logger.info("====");
-                            replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
+                            replyMessagePart = replyMessagePart.length == 0 ? subPod.plaintext[0] : replyMessagePart + "\n" + subPod.plaintext[0];
                         });
                         if (title === 'Input' || 
                             title === 'Solution' || 
@@ -74,7 +74,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             counter++;
                             pods[index].used = true;
                             answerColumns.push({
-                                thumbnailImageUrl: subPods[0].img[0],
+                                thumbnailImageUrl: subPods[0].img[0]['$'].src,
                                 title: title,
                                 text: replyMessagePart,
                                 actions: [
@@ -96,13 +96,13 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info(subPod.img[0]);
                             logger.info(subPod.plaintext[0]);
                             logger.info("====");
-                            replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
+                            replyMessagePart = replyMessagePart.length == 0 ? subPod.plaintext[0] : replyMessagePart + "\n" + subPod.plaintext[0];
                         });
                         if (counter < 5 && !pods[index].used) {
                             counter++;
                             pods[index].used = true;
                             answerColumns.push({
-                                thumbnailImageUrl: subPods[0].img[0],
+                                thumbnailImageUrl: subPods[0].img[0]['$'].src,
                                 title: title,
                                 text: replyMessagePart,
                                 actions: [
