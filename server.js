@@ -109,7 +109,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        data: replyMessagePart
+                                        text: replyMessagePart,
                                     }
                                 ]
                             });
@@ -117,27 +117,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                     });
                     const data = {
                         to: userId,
-                        messages:[{
-                            type: "template",
-                            altText: "this is a carousel template",
-                            template: {
-                                type: "carousel",
-                                columns: [
-                                    {
-                                        thumbnailImageUrl: "https://example.com/bot/images/item1.jpg",
-                                        title: "this is menu",
-                                        text: "description",
-                                        actions: [
-                                            {
-                                                "type": "message",
-                                                "label": "Detail",
-                                                "data": "action=buy&itemid=111"
-                                            }
-                                        ]
-                                    },
-                                ]
-                            }
-                        }],
+                        messages: answerColumns,
                         
                     };
                     logger.info(data);
