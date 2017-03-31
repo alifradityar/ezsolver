@@ -90,12 +90,12 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             answerColumns.push({
                                 thumbnailImageUrl: imageUrl,
                                 title: title,
-                                text: replyMessagePart || title,
+                                text: _truncate(replyMessagePart || title, 60),
                                 actions: [
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        text: replyMessagePart || title
+                                        text: _truncate(replyMessagePart || title, 60),
                                     }
                                 ]
                             });
@@ -119,12 +119,12 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             answerColumns.push({
                                 thumbnailImageUrl: imageUrl,
                                 title: title,
-                                text: _truncate(replyMessagePart || title),
+                                text: _truncate(replyMessagePart || title, 60),
                                 actions: [
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        text: _truncate(replyMessagePart || title),
+                                        text: _truncate(replyMessagePart || title, 60),
                                     }
                                 ]
                             });
