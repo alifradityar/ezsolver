@@ -36,6 +36,16 @@ const _imageEncode = (arrayBuffer) => {
     return "data:"+mimetype+";base64,"+b64encoded
 };
 
+const _truncate = (str, maxLen) => {
+    if (maxLen <= 2) {
+        return str;
+    }
+    if (str.length > maxLen) {
+        return str.subString(0, maxLen-2) + "..";
+    }
+    return str;
+}
+
 app.use(jsonParser);
 app.use(jsonErrorHandler);
 app.use(expressLogger);
@@ -70,7 +80,10 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             title === 'Solution' || 
                             title === 'Decimal approximation' || 
                             title === 'Response' ||
-                            title === 'Result') {
+                            title === 'Result' || 
+                            title === 'Roots' ||
+                            title === 'Solutions' ||
+                            title === 'Root') {
                             counter++;
                             pods[index].used = true;
                             const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/768.jpg`
@@ -106,12 +119,12 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             answerColumns.push({
                                 thumbnailImageUrl: imageUrl,
                                 title: title,
-                                text: replyMessagePart || title,
+                                text: _truncate(replyMessagePart || title),
                                 actions: [
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        text: replyMessagePart || title,
+                                        text: _truncate(replyMessagePart || title),
                                     }
                                 ]
                             });
@@ -126,6 +139,9 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                                 type: "carousel",
                                 columns: answerColumns,
                             }
+                        },{
+                            type: "text",
+                            text: "If our interpretation of the your input is wrong, kindly rewrite it manually",
                         }],
                         
                     };
