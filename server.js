@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const config = require('./config');
 const Promise = require('bluebird');
+const btoa = require('btoa');
 const logger = require('./logger').logger;
 const axios = require('axios');
 const parseString = Promise.promisify(require('xml2js').parseString);
@@ -104,10 +105,9 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     headers: {
                         Authorization: `Bearer ${config.lineToken}`,
                     },
+                    responseType: 'arraybuffer',
                 }).then((resp) => {
-                    const base64Data = "data:" + resp.headers["Content-Type"] + ";base64," + new Buffer(resp.data).toString('base64');
-                    logger.info("data:" + resp.headers["Content-Type"] + ";base64,");
-                    logger.info(base64Data);
+                    const base64Data = _imageEncode(resp.data);
                     const visionData = new vision.Request({
                         image: new vision.Image({
                             base64: base64Data
@@ -136,30 +136,35 @@ apiRoutes.post('/lineWebhook', (req, res) => {
 });
 
 apiRoutes.get('/test', (req, res) => {
-    // vision.readDocument('http://www.proprofs.com/quiz-school/upload/yuiupload/63522999.jpg')
-    //     .then((data) => {
-    //         console.log(data);
-    //         const results = data[1].responses[0].fullTextAnnotation;
-    //         console.log(results.text);
-    //     }).catch((err) => {
-    //         console.log(err);
-    //     });
-
-    const test = new vision.Request({
-        image: new vision.Image({
-            url: 'http://www.proprofs.com/quiz-school/upload/yuiupload/63522999.jpg'
-        }),
-        features: [
-            new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
-        ],
-    })
-    // send single request
-    vision.annotate(test).then((res) => {
-        // handling response
-        console.log(JSON.stringify(res.responses))
-    }, (e) => {
-        console.log('Error: ', e)
-    })
+    axios.get(`https://api.line.me/v2/bot/message/5864091880972/content`, {
+            headers: {
+                Authorization: `Bearer ${config.lineToken}`,
+            },
+            responseType: 'arraybuffer',
+        }).then((resp) => {
+            const base64Data = _imageEncode(resp.data);
+            logger.info("data:" + resp.headers["content-type"] + ";base64,");
+            logger.info(base64Data);
+            const visionData = new vision.Request({
+                image: new vision.Image({
+                    base64: base64Data
+                }),
+                features: [
+                    new vision.Feature('DOCUMENT_TEXT_DETECTION', 1),
+                ],
+            })
+            // send single request
+            vision.annotate(visionData).then((res) => {
+                // handling response
+                logger.info(JSON.stringify(res.responses));
+                const text = res.responses[0].textAnnotations[0].description;
+                logger.info(text);
+            }, (e) => {
+                logger.error('Error: ', e)
+            })
+        }).catch((err) => {
+            logger.error(err);
+        });;
     res.status(200).json('Ok');
 });
 
