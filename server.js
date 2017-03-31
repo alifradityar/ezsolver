@@ -40,7 +40,7 @@ app.use(jsonParser);
 app.use(jsonErrorHandler);
 app.use(expressLogger);
 
-const fetchWolframAndReply = (messageQuery) => {
+const fetchWolframAndReply = (replyToken, messageQuery) => {
      // Wolframalpha
     axios.get(`http://api.wolframalpha.com/v2/query?input=${messageQuery}&appid=${config.wolframalphaToken}`)
         .then((resp) => {
@@ -62,7 +62,11 @@ const fetchWolframAndReply = (messageQuery) => {
                             replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
                         });
                         replyMessagePart + "\n";
-                        if (title === 'Input' || title === 'Solution' || title === 'Decimal approximation' || title === 'Response') {
+                        if (title === 'Input' || 
+                            title === 'Solution' || 
+                            title === 'Decimal approximation' || 
+                            title === 'Response' ||
+                            title === 'Result') {
                             if (replyMessage.length == 0) {
                                 replyMessage = replyMessage + replyMessagePart;
                             } else {
@@ -103,7 +107,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
         const messageId = event.message.id;
         if (messageType === 'text') {
             const messageQuery = event.message.text || 'pi';
-            fetchWolframAndReply(messageQuery);
+            fetchWolframAndReply(replyToken, messageQuery);
         } else if (messageType === 'image') {
             axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
                     headers: {
@@ -126,7 +130,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         logger.info(JSON.stringify(res.responses));
                         const messageQuery = res.responses[0].textAnnotations[0].description;
                         logger.info(messageQuery);
-                        fetchWolframAndReply(messageQuery);
+                        fetchWolframAndReply(replyToken, messageQuery);
                     }, (e) => {
                         logger.error('Error: ', e)
                     })
