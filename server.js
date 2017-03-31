@@ -42,8 +42,12 @@ app.use(expressLogger);
 
 const fetchWolframAndReply = (replyToken, messageQuery) => {
      // Wolframalpha
-    axios.get(`http://api.wolframalpha.com/v2/query?input=${messageQuery}&appid=${config.wolframalphaToken}`)
-        .then((resp) => {
+    axios.get(`http://api.wolframalpha.com/v2/query`, {
+            params: {
+                input: messageQuery,
+                appid: config.wolframalphaToken,
+            }  
+        }).then((resp) => {
             // console.log(resp.data);
             parseString(resp.data)
                 .then((json) => {
