@@ -138,7 +138,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info('Reply success');
                             logger.info(resp.data);
                         }).catch((err) => {
-                            logger.error(err.data);
+                            logger.error(err);
                         });;
                 });
         }).catch((err) => {
