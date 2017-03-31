@@ -7,6 +7,7 @@
     "start": "node server.js",
     "develop": "nodemon server.js"
   },
+  "engines":{"node": "7.4.0"},
   "author": "Alif Raditya Rochman",
   "license": "UNLICENSED",
   "repository": "https://github.com/alifradityar/mathpic",
