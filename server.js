@@ -191,7 +191,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
         const messageId = event.message.id;
         const userId = event.source.userId;
         
-        if (messageType === 'text' && text.toLowerCase() === 'help') {
+        if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
             const data = {
                 replyToken: replyToken,
                 messages:[{
