@@ -73,15 +73,16 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             title === 'Result') {
                             counter++;
                             pods[index].used = true;
+                            const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/768.jpg`
                             answerColumns.push({
                                 thumbnailImageUrl: subPods[0].img[0]['$'].src,
                                 title: title,
-                                text: replyMessagePart,
+                                text: replyMessagePart || title,
                                 actions: [
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        text: replyMessagePart
+                                        text: replyMessagePart || title
                                     }
                                 ]
                             });
@@ -104,12 +105,12 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             answerColumns.push({
                                 thumbnailImageUrl: subPods[0].img[0]['$'].src,
                                 title: title,
-                                text: replyMessagePart,
+                                text: replyMessagePart || title,
                                 actions: [
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        text: replyMessagePart,
+                                        text: replyMessagePart || title,
                                     }
                                 ]
                             });
@@ -195,7 +196,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         logger.info(JSON.stringify(res.responses));
                         const messageQuery = res.responses[0].textAnnotations[0].description;
                         logger.info(messageQuery);
-                        fetchWolframAndReply(userId, messageQuery);
+                        fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
                     }, (e) => {
                         logger.error('Error: ', e)
                     })
