@@ -161,7 +161,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             }
                         },{
                             type: "text",
-                            text: "If our interpretation of the your input is wrong, kindly rewrite it or rephrase it",
+                            text: "If our interpretation of your input is wrong, kindly rewrite it or rephrase it",
                         }],
                         
                     };
@@ -190,6 +190,26 @@ apiRoutes.post('/lineWebhook', (req, res) => {
         const messageType = event.message.type;
         const messageId = event.message.id;
         const userId = event.source.userId;
+        
+        if (messageType === 'text' && text.toLowerCase() === 'help') {
+            const data = {
+                replyToken: replyToken,
+                messages:[{
+                    type: "text",
+                    text: "Enter text or upload the picture of your math equation, chemistry equation, or anything!",
+                }],
+            };
+            axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                headers: {
+                    Authorization: `Bearer ${config.lineToken}`,
+                },
+            }).then((resp) => {
+                logger.info('Reply success');
+                logger.info(resp.data);
+            }).catch((err) => {
+                logger.error(err);
+            });;
+        }
         const data = {
             replyToken: replyToken,
             messages:[{
