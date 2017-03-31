@@ -8,8 +8,7 @@ const btoa = require('btoa');
 const logger = require('./logger').logger;
 const axios = require('axios');
 const parseString = Promise.promisify(require('xml2js').parseString);
-const vision = require('node-cloud-vision-api');
-const Tesseract = require('tesseract.js');
+const vision = require('node-cloud-vision-api')
 vision.init({auth: config.visionKey})
 
 const app = express();
@@ -139,7 +138,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info('Reply success');
                             logger.info(resp.data);
                         }).catch((err) => {
-                            logger.error(err);
+                            logger.error(err.data);
                         });;
                 });
         }).catch((err) => {
@@ -193,19 +192,15 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         ],
                     })
                     // send single request
-                    // vision.annotate(visionData).then((res) => {
-                    //     // handling response
-                    //     logger.info(JSON.stringify(res.responses));
-                    //     const messageQuery = res.responses[0].textAnnotations[0].description;
-                    //     logger.info(messageQuery);
-                    //     fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
-                    // }, (e) => {
-                    //     logger.error('Error: ', e)
-                    // });
-                    Tesseract.recognize(Buffer.from(base64Data, 'base64'))
-                        .then((result) => {
-                            logger.info(result)
-                        });
+                    vision.annotate(visionData).then((res) => {
+                        // handling response
+                        logger.info(JSON.stringify(res.responses));
+                        const messageQuery = res.responses[0].textAnnotations[0].description;
+                        logger.info(messageQuery);
+                        fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
+                    }, (e) => {
+                        logger.error('Error: ', e)
+                    })
                 }).catch((err) => {
                     logger.error(err);
                 });;
