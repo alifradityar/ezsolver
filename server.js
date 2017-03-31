@@ -41,7 +41,7 @@ const _truncate = (str, maxLen) => {
         return str;
     }
     if (str.length > maxLen) {
-        return str.string(0, maxLen-2) + "..";
+        return str.substring(0, maxLen-2) + "..";
     }
     return str;
 }
@@ -141,7 +141,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             }
                         },{
                             type: "text",
-                            text: "If our interpretation of the your input is wrong, kindly rewrite it manually",
+                            text: "If our interpretation of the your input is wrong, kindly rewrite it or rephrase it",
                         }],
                         
                     };
