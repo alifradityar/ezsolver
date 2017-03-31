@@ -53,12 +53,12 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                 .then((json) => {
                     // console.log(json.queryresult.pod);
                     const pods = json.queryresult.pod;
-                    let replyMessage = "";
                     let counter = 0;
+                    const answerColumns = []
                     pods.forEach((pod, index) => {
                         const title = pod['$'].title;
                         const subPods = pod.subpod;
-                        let replyMessagePart = title + `\n` + `=====`;
+                        let replyMessagePart = "";
                         subPods.forEach((subPod) => {
                             logger.info(title);
                             logger.info(subPod.img[0]);
@@ -66,7 +66,6 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info("====");
                             replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
                         });
-                        replyMessagePart + "\n";
                         if (title === 'Input' || 
                             title === 'Solution' || 
                             title === 'Decimal approximation' || 
@@ -74,17 +73,24 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             title === 'Result') {
                             counter++;
                             pods[index].used = true;
-                            if (replyMessage.length == 0) {
-                                replyMessage = replyMessage + replyMessagePart;
-                            } else {
-                                replyMessage = replyMessage + "\n" + replyMessagePart;
-                            }
+                            answerColumns.push({
+                                thumbnailImageUrl: subPods[0].img[0],
+                                title: title,
+                                text: replyMessagePart,
+                                actions: [
+                                    {
+                                        type: "message",
+                                        label: "Detail",
+                                        data: replyMessagePart
+                                    }
+                                ]
+                            });
                         }
                     });
                     pods.forEach((pod, index) => {
                         const title = pod['$'].title;
                         const subPods = pod.subpod;
-                        let replyMessagePart = title + `\n` + `=====`;
+                        let replyMessagePart = "";
                         subPods.forEach((subPod) => {
                             logger.info(title);
                             logger.info(subPod.img[0]);
@@ -95,19 +101,44 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                         if (counter < 5 && !pods[index].used) {
                             counter++;
                             pods[index].used = true;
-                            if (replyMessage.length == 0) {
-                                replyMessage = replyMessage + replyMessagePart;
-                            } else {
-                                replyMessage = replyMessage + "\n" + replyMessagePart;
-                            }
+                            answerColumns.push({
+                                thumbnailImageUrl: subPods[0].img[0],
+                                title: title,
+                                text: replyMessagePart,
+                                actions: [
+                                    {
+                                        type: "message",
+                                        label: "Detail",
+                                        data: replyMessagePart
+                                    }
+                                ]
+                            });
                         }
                     });
                     const data = {
                         to: userId,
                         messages:[{
-                            type: "text",
-                            text: replyMessage,
+                            type: "template",
+                            altText: "this is a carousel template",
+                            template: {
+                                type: "carousel",
+                                columns: [
+                                    {
+                                        thumbnailImageUrl: "https://example.com/bot/images/item1.jpg",
+                                        title: "this is menu",
+                                        text: "description",
+                                        actions: [
+                                            {
+                                                "type": "message",
+                                                "label": "Detail",
+                                                "data": "action=buy&itemid=111"
+                                            }
+                                        ]
+                                    },
+                                ]
+                            }
                         }],
+                        
                     };
                     logger.info(data);
                     axios.post(`https://api.line.me/v2/bot/message/push`, data, {
