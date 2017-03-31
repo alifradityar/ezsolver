@@ -41,7 +41,7 @@ const _truncate = (str, maxLen) => {
         return str;
     }
     if (str.length > maxLen) {
-        return str.subString(0, maxLen-2) + "..";
+        return str.string(0, maxLen-2) + "..";
     }
     return str;
 }
