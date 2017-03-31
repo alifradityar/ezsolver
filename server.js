@@ -73,7 +73,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             title === 'Response' ||
                             title === 'Result') {
                             counter++;
-                            pods.used = true;
+                            pods[index].used = true;
                             if (replyMessage.length == 0) {
                                 replyMessage = replyMessage + replyMessagePart;
                             } else {
@@ -92,9 +92,9 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             logger.info("====");
                             replyMessagePart = replyMessagePart + "\n" + subPod.plaintext[0];
                         });
-                        if (counter < 5 && !pods.used) {
+                        if (counter < 5 && !pods[index].used) {
                             counter++;
-                            pods.used = true;
+                            pods[index].used = true;
                             if (replyMessage.length == 0) {
                                 replyMessage = replyMessage + replyMessagePart;
                             } else {
