@@ -62,9 +62,29 @@ const fetchWolframAndReply = (userId, messageQuery) => {
             parseString(resp.data)
                 .then((json) => {
                     // console.log(json.queryresult.pod);
-                    const pods = json.queryresult.pod;
+                    const pods = json.queryresult && json.queryresult.pod;
                     let counter = 0;
                     const answerColumns = []
+                    if (!pods || pods.length == 0) {
+                        const data = {
+                        to: userId,
+                        messages: [{
+                            type: "text",
+                            text: "Sorry, we can't find the answer :(",
+                        }],
+                    };
+                    logger.info(data);
+                    axios.post(`https://api.line.me/v2/bot/message/push`, data, {
+                            headers: {
+                                Authorization: `Bearer ${config.lineToken}`,
+                            },
+                        }).then((resp) => {
+                            logger.info('Reply success');
+                            logger.info(resp.data);
+                        }).catch((err) => {
+                            logger.error(err.data);
+                        });;
+                    }
                     pods.forEach((pod, index) => {
                         const title = pod['$'].title;
                         const subPods = pod.subpod;
