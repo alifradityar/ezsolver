@@ -102,7 +102,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                         if (counter < 5 && !pods[index].used) {
                             counter++;
                             pods[index].used = true;
-                            const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/768.jpg`
+                            const imageUrl = `${config.imageProxyUrl}/${encodeURIComponent(subPods[0].img[0]['$'].src)}/512/341.jpg`
                             answerColumns.push({
                                 thumbnailImageUrl: imageUrl,
                                 title: title,
