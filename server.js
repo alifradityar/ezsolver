@@ -40,7 +40,7 @@ app.use(jsonParser);
 app.use(jsonErrorHandler);
 app.use(expressLogger);
 
-const fetchWolframAndReply = (replyToken, messageQuery) => {
+const fetchWolframAndReply = (userId, messageQuery) => {
      // Wolframalpha
     axios.get(`http://api.wolframalpha.com/v2/query`, {
             params: {
@@ -79,14 +79,14 @@ const fetchWolframAndReply = (replyToken, messageQuery) => {
                         }
                     });
                     const data = {
-                        replyToken: replyToken,
+                        to: userId,
                         messages:[{
                             type: "text",
                             text: replyMessage,
                         }],
                     };
                     logger.info(data);
-                    axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                    axios.post(`https://api.line.me/v2/bot/message/push`, data, {
                             headers: {
                                 Authorization: `Bearer ${config.lineToken}`,
                             },
@@ -109,9 +109,28 @@ apiRoutes.post('/lineWebhook', (req, res) => {
         const replyToken = event.replyToken;
         const messageType = event.message.type;
         const messageId = event.message.id;
+        const userId = event.source.userId;
+        const data = {
+            replyToken: replyToken,
+            messages:[{
+                type: "text",
+                text: "Gotcha! Please wait a moment, looking for the answer...",
+            }],
+        };
+        axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                headers: {
+                    Authorization: `Bearer ${config.lineToken}`,
+                },
+            }).then((resp) => {
+                logger.info('Reply success');
+                logger.info(resp.data);
+            }).catch((err) => {
+                logger.error(err);
+            });;
+
         if (messageType === 'text') {
             const messageQuery = event.message.text || 'pi';
-            fetchWolframAndReply(replyToken, messageQuery);
+            fetchWolframAndReply(userId, messageQuery);
         } else if (messageType === 'image') {
             axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
                     headers: {
@@ -134,7 +153,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         logger.info(JSON.stringify(res.responses));
                         const messageQuery = res.responses[0].textAnnotations[0].description;
                         logger.info(messageQuery);
-                        fetchWolframAndReply(replyToken, messageQuery);
+                        fetchWolframAndReply(userId, messageQuery);
                     }, (e) => {
                         logger.error('Error: ', e)
                     })
