@@ -81,7 +81,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                                     {
                                         type: "message",
                                         label: "Detail",
-                                        data: replyMessagePart
+                                        text: replyMessagePart
                                     }
                                 ]
                             });
@@ -117,7 +117,14 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                     });
                     const data = {
                         to: userId,
-                        messages: answerColumns,
+                        messages: [{
+                            type: "template",
+                            altText: "this is a carousel template",
+                            template: {
+                                type: "carousel",
+                                columns: answerColumns,
+                            }
+                        }],
                         
                     };
                     logger.info(data);
