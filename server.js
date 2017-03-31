@@ -208,7 +208,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 logger.info(resp.data);
             }).catch((err) => {
                 logger.error(err);
-            });;
+            });
         } else {
             const data = {
                 replyToken: replyToken,
@@ -226,43 +226,42 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     logger.info(resp.data);
                 }).catch((err) => {
                     logger.error(err);
-                });;
-        }
-
-        if (messageType === 'text') {
-            const messageQuery = event.message.text || 'pi';
-            fetchWolframAndReply(userId, messageQuery);
-        } else if (messageType === 'image') {
-            axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
-                    headers: {
-                        Authorization: `Bearer ${config.lineToken}`,
-                    },
-                    responseType: 'arraybuffer',
-                }).then((resp) => {
-                    const base64Data = _imageEncode(resp.data);
-                    const visionData = new vision.Request({
-                        image: new vision.Image({
-                            base64: base64Data
-                        }),
-                        features: [
-                            new vision.Feature('TEXT_DETECTION', 1),
-                        ],
-                    })
-                    // send single request
-                    vision.annotate(visionData).then((res) => {
-                        // handling response
-                        logger.info(JSON.stringify(res.responses));
-                        const messageQuery = res.responses[0].textAnnotations[0].description;
-                        logger.info(messageQuery);
-                        fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
-                    }, (e) => {
-                        logger.error('Error: ', e)
-                    })
-                }).catch((err) => {
-                    logger.error(err);
-                });;
-        } else {
-            logger.warn('Unsupported type');
+                });
+            if (messageType === 'text') {
+                const messageQuery = event.message.text || 'pi';
+                fetchWolframAndReply(userId, messageQuery);
+            } else if (messageType === 'image') {
+                axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
+                        headers: {
+                            Authorization: `Bearer ${config.lineToken}`,
+                        },
+                        responseType: 'arraybuffer',
+                    }).then((resp) => {
+                        const base64Data = _imageEncode(resp.data);
+                        const visionData = new vision.Request({
+                            image: new vision.Image({
+                                base64: base64Data
+                            }),
+                            features: [
+                                new vision.Feature('TEXT_DETECTION', 1),
+                            ],
+                        })
+                        // send single request
+                        vision.annotate(visionData).then((res) => {
+                            // handling response
+                            logger.info(JSON.stringify(res.responses));
+                            const messageQuery = res.responses[0].textAnnotations[0].description;
+                            logger.info(messageQuery);
+                            fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
+                        }, (e) => {
+                            logger.error('Error: ', e)
+                        })
+                    }).catch((err) => {
+                        logger.error(err);
+                    });;
+            } else {
+                logger.warn('Unsupported type');
+            }
         }
     });
     res.status(200).json('Ok');
