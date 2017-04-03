@@ -50,7 +50,7 @@ app.use(jsonParser);
 app.use(jsonErrorHandler);
 app.use(expressLogger);
 
-const fetchWolframAndReply = (userId, messageQuery) => {
+const fetchWolframAndReply = (userId, messageQuery, isGroup) => {
      // Wolframalpha
     axios.get(`http://api.wolframalpha.com/v2/query`, {
             params: {
@@ -66,11 +66,15 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                     let counter = 0;
                     const answerColumns = []
                     if (!pods || pods.length == 0) {
+                        let exampleText = "Sorry, we can't find the answer :(\nExample question:\n- x^2+x-1=0\n- CO2+H2O=C6H12O6\n- President of Indonesia\n\ntype 'help' for more info";
+                        if (isGroup) {
+                            exampleText = "Sorry, we can't find the answer :(\nExample question:\n- ez x^2+x-1=0\n- ez CO2+H2O=C6H12O6\n- ez President of Indonesia\n\ntype 'ez help' for more info"
+                        }
                         const data = {
                             to: userId,
                             messages: [{
                                 type: "text",
-                                text: "Sorry, we can't find the answer :(\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                                text: exampleText,
                             }],
                         };
                         logger.info(data);
@@ -150,6 +154,10 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             });
                         }
                     });
+                    let exampleText = "If our interpretation of your input is wrong, kindly rewrite it or rephrase it\ntype 'help' for more info";
+                    if (isGroup) {
+                        exampleText = "If our interpretation of your input is wrong, kindly rewrite it or rephrase it\ntype 'ez help' for more info"
+                    }
                     const data = {
                         to: userId,
                         messages: [{
@@ -161,7 +169,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             }
                         },{
                             type: "text",
-                            text: "If our interpretation of your input is wrong, kindly rewrite it or rephrase it\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                            text: exampleText,
                         }],
                         
                     };
@@ -192,7 +200,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 replyToken: replyToken,
                 messages: [{
                     type: "text",
-                    text: "Hi there! Thank you for adding EZSolver :)\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                    text: "Hi there! Thank you for adding EZSolver :)\nExample question:\n- x^2+x-1=0\n- CO2+H2O=C6H12O6\n- President of Indonesia\n\ntype 'help' for more info",
                 }],
             };
             axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
@@ -210,7 +218,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 replyToken: replyToken,
                 messages: [{
                     type: "text",
-                    text: "Hi there! Thank you for inviting EZSolver :) Please add 'ez' if you want to solve anything \nExample question:\nez x^2+x-1=0\nez CO2+H2O=C6H12O6\nez President of Indonesia\n\ntype 'ez help' for more info",
+                    text: "Hi there! Thank you for inviting EZSolver :) Please add 'ez' if you want to solve anything \nExample question:\n- ez x^2+x-1=0\n- ez CO2+H2O=C6H12O6\n- ez President of Indonesia\n\ntype 'ez help' for more info",
                 }],
             };
             axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
@@ -229,6 +237,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             const messageId = event.message.id;
             const sourceType = event.source.type;
             const userId = event.source.userId || event.source.roomId;
+            const isGroup = sourceType === "room";
             if (sourceType === "room" && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
                 return;
             }
@@ -240,11 +249,15 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             }
             event.message.text = event.message.text.trim();
             if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
+                let exampleText = "Enter text or upload the picture of your math equation, chemistry equation, or anything!\nExample question:\n- x^2+x-1=0\n- CO2+H2O=C6H12O6\n- President of Indonesia\n\ntype 'help' for more info";
+                if (isGroup) {
+                    exampleText = "Enter text or upload the picture of your math equation, chemistry equation, or anything!\nExample question:\n- ez x^2+x-1=0\n- ez CO2+H2O=C6H12O6\n- ez President of Indonesia\n\ntype 'ez help' for more info"
+                }
                 const data = {
                     replyToken: replyToken,
                     messages:[{
                         type: "text",
-                        text: "Enter text or upload the picture of your math equation, chemistry equation, or anything!",
+                        text: exampleText,
                     }],
                 };
                 axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
@@ -277,7 +290,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     });
                 if (messageType === 'text') {
                     const messageQuery = event.message.text || 'pi';
-                    fetchWolframAndReply(userId, messageQuery);
+                    fetchWolframAndReply(userId, messageQuery, isGroup);
                 } else if (messageType === 'image') {
                     axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
                             headers: {
@@ -293,14 +306,14 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                                 features: [
                                     new vision.Feature('TEXT_DETECTION', 1),
                                 ],
-                            })
+                            });
                             // send single request
                             vision.annotate(visionData).then((res) => {
                                 // handling response
                                 logger.info(JSON.stringify(res.responses));
                                 const messageQuery = res.responses[0].textAnnotations[0].description;
                                 logger.info(messageQuery);
-                                fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
+                                fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "), isGroup);
                             }, (e) => {
                                 logger.error('Error: ', e)
                             })
@@ -309,11 +322,15 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                         });;
                 } else {
                     logger.warn('Unsupported type');
+                    let exampleText = "Sorry, we only support text and image :(\nExample question:\n- x^2+x-1=0\n- CO2+H2O=C6H12O6\n- President of Indonesia\n\ntype 'help' for more info";
+                    if (isGroup) {
+                        exampleText = "Sorry, we only support text and image :(\nExample question:\n- ez x^2+x-1=0\n- ez CO2+H2O=C6H12O6\n- ez President of Indonesia\n\ntype 'ez help' for more info"
+                    }
                     const data = {
                         to: userId,
                         messages: [{
                             type: "text",
-                            text: "Sorry, we only support text and image :(\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                            text: exampleText,
                         }],
                     };
                     logger.info(data);
