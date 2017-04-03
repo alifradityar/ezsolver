@@ -195,6 +195,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
     events.map((event) => {
         logger.info(event);
         const type = event.type;
+        const replyToken = event.replyToken;
         if (type === 'follow') {
             const data = {
                 replyToken: replyToken,
@@ -232,13 +233,12 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                     logger.error(err);
                 });
         } else if (type === 'message') {
-            const replyToken = event.replyToken;
             const messageType = event.message.type;
             const messageId = event.message.id;
             const sourceType = event.source.type;
-            const userId = event.source.userId || event.source.roomId;
-            const isGroup = sourceType === "room";
-            if (sourceType === "room" && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
+            const userId = event.source.userId || event.source.roomId || evet.source.groupId;
+            const isGroup = sourceType === "room" || sourceType === "group";
+            if (isGroup && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
                 return;
             }
             if (event.message.text.toLowerCase().startsWith("ez")) {
