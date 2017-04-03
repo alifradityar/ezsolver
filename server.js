@@ -210,7 +210,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 replyToken: replyToken,
                 messages: [{
                     type: "text",
-                    text: "Hi there! Thank you for inviting EZSolver :)\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                    text: "Hi there! Thank you for inviting EZSolver :) Please add 'ez' if you want to solve anything \nExample question:\nez x^2+x-1=0\nez CO2+H2O=C6H12O6\nez President of Indonesia\n\ntype 'ez help' for more info",
                 }],
             };
             axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
@@ -227,8 +227,12 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             const replyToken = event.replyToken;
             const messageType = event.message.type;
             const messageId = event.message.id;
-            const userId = event.source.userId;
-            
+            const sourceType = event.source.type;
+            const userId = event.source.userId || event.source.roomId;
+            if (sourceType === "room" && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
+                return;
+            }
+            event.message.text = event.message.text.replace("ezsolver", "").replace("ez", "").trim();
             if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
                 const data = {
                     replyToken: replyToken,
