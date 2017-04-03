@@ -232,7 +232,13 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             if (sourceType === "room" && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
                 return;
             }
-            event.message.text = event.message.text.replace("ezsolver", "").replace("ez", "").trim();
+            if (event.message.text.toLowerCase().startsWith("ez")) {
+                event.message.text = event.message.text.substring(2);
+            }
+            if (event.message.text.toLowerCase().startsWith("ezsolver")) {
+                event.message.text = event.message.text.substring(8);
+            }
+            event.message.text = event.message.text.trim();
             if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
                 const data = {
                     replyToken: replyToken,
