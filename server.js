@@ -67,23 +67,23 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                     const answerColumns = []
                     if (!pods || pods.length == 0) {
                         const data = {
-                        to: userId,
-                        messages: [{
-                            type: "text",
-                            text: "Sorry, we can't find the answer :(",
-                        }],
-                    };
-                    logger.info(data);
-                    axios.post(`https://api.line.me/v2/bot/message/push`, data, {
-                            headers: {
-                                Authorization: `Bearer ${config.lineToken}`,
-                            },
-                        }).then((resp) => {
-                            logger.info('Reply success');
-                            logger.info(resp.data);
-                        }).catch((err) => {
-                            logger.error(err.data);
-                        });;
+                            to: userId,
+                            messages: [{
+                                type: "text",
+                                text: "Sorry, we can't find the answer :(\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                            }],
+                        };
+                        logger.info(data);
+                        axios.post(`https://api.line.me/v2/bot/message/push`, data, {
+                                headers: {
+                                    Authorization: `Bearer ${config.lineToken}`,
+                                },
+                            }).then((resp) => {
+                                logger.info('Reply success');
+                                logger.info(resp.data);
+                            }).catch((err) => {
+                                logger.error(err.data);
+                            });;
                     }
                     pods.forEach((pod, index) => {
                         const title = pod['$'].title;
@@ -161,7 +161,7 @@ const fetchWolframAndReply = (userId, messageQuery) => {
                             }
                         },{
                             type: "text",
-                            text: "If our interpretation of your input is wrong, kindly rewrite it or rephrase it",
+                            text: "If our interpretation of your input is wrong, kindly rewrite it or rephrase it\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
                         }],
                         
                     };
@@ -186,35 +186,13 @@ apiRoutes.post('/lineWebhook', (req, res) => {
     const events = req.body.events || [];
     events.map((event) => {
         logger.info(event);
-        const replyToken = event.replyToken;
-        const messageType = event.message.type;
-        const messageId = event.message.id;
-        const userId = event.source.userId;
-        
-        if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
+        const type = event.type;
+        if (type === 'follow') {
             const data = {
                 replyToken: replyToken,
-                messages:[{
+                messages: [{
                     type: "text",
-                    text: "Enter text or upload the picture of your math equation, chemistry equation, or anything!",
-                }],
-            };
-            axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
-                headers: {
-                    Authorization: `Bearer ${config.lineToken}`,
-                },
-            }).then((resp) => {
-                logger.info('Reply success');
-                logger.info(resp.data);
-            }).catch((err) => {
-                logger.error(err);
-            });
-        } else {
-            const data = {
-                replyToken: replyToken,
-                messages:[{
-                    type: "text",
-                    text: "Gotcha! Please wait a moment, looking for the answer...",
+                    text: "Hi there! Thank you for adding EZSolver :)\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
                 }],
             };
             axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
@@ -227,40 +205,119 @@ apiRoutes.post('/lineWebhook', (req, res) => {
                 }).catch((err) => {
                     logger.error(err);
                 });
-            if (messageType === 'text') {
-                const messageQuery = event.message.text || 'pi';
-                fetchWolframAndReply(userId, messageQuery);
-            } else if (messageType === 'image') {
-                axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
+        } else if (type === 'join') {
+            const data = {
+                replyToken: replyToken,
+                messages: [{
+                    type: "text",
+                    text: "Hi there! Thank you for inviting EZSolver :)\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                }],
+            };
+            axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                    headers: {
+                        Authorization: `Bearer ${config.lineToken}`,
+                    },
+                }).then((resp) => {
+                    logger.info('Reply success');
+                    logger.info(resp.data);
+                }).catch((err) => {
+                    logger.error(err);
+                });
+        } else if (type === 'message') {
+            const replyToken = event.replyToken;
+            const messageType = event.message.type;
+            const messageId = event.message.id;
+            const userId = event.source.userId;
+            
+            if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
+                const data = {
+                    replyToken: replyToken,
+                    messages:[{
+                        type: "text",
+                        text: "Enter text or upload the picture of your math equation, chemistry equation, or anything!",
+                    }],
+                };
+                axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
+                    headers: {
+                        Authorization: `Bearer ${config.lineToken}`,
+                    },
+                }).then((resp) => {
+                    logger.info('Reply success');
+                    logger.info(resp.data);
+                }).catch((err) => {
+                    logger.error(err);
+                });
+            } else {
+                const data = {
+                    replyToken: replyToken,
+                    messages:[{
+                        type: "text",
+                        text: "Gotcha! Please wait a moment, looking for the answer...",
+                    }],
+                };
+                axios.post(`https://api.line.me/v2/bot/message/reply`, data, {
                         headers: {
                             Authorization: `Bearer ${config.lineToken}`,
                         },
-                        responseType: 'arraybuffer',
                     }).then((resp) => {
-                        const base64Data = _imageEncode(resp.data);
-                        const visionData = new vision.Request({
-                            image: new vision.Image({
-                                base64: base64Data
-                            }),
-                            features: [
-                                new vision.Feature('TEXT_DETECTION', 1),
-                            ],
-                        })
-                        // send single request
-                        vision.annotate(visionData).then((res) => {
-                            // handling response
-                            logger.info(JSON.stringify(res.responses));
-                            const messageQuery = res.responses[0].textAnnotations[0].description;
-                            logger.info(messageQuery);
-                            fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
-                        }, (e) => {
-                            logger.error('Error: ', e)
-                        })
+                        logger.info('Reply success');
+                        logger.info(resp.data);
                     }).catch((err) => {
                         logger.error(err);
-                    });;
-            } else {
-                logger.warn('Unsupported type');
+                    });
+                if (messageType === 'text') {
+                    const messageQuery = event.message.text || 'pi';
+                    fetchWolframAndReply(userId, messageQuery);
+                } else if (messageType === 'image') {
+                    axios.get(`https://api.line.me/v2/bot/message/${messageId}/content`, {
+                            headers: {
+                                Authorization: `Bearer ${config.lineToken}`,
+                            },
+                            responseType: 'arraybuffer',
+                        }).then((resp) => {
+                            const base64Data = _imageEncode(resp.data);
+                            const visionData = new vision.Request({
+                                image: new vision.Image({
+                                    base64: base64Data
+                                }),
+                                features: [
+                                    new vision.Feature('TEXT_DETECTION', 1),
+                                ],
+                            })
+                            // send single request
+                            vision.annotate(visionData).then((res) => {
+                                // handling response
+                                logger.info(JSON.stringify(res.responses));
+                                const messageQuery = res.responses[0].textAnnotations[0].description;
+                                logger.info(messageQuery);
+                                fetchWolframAndReply(userId, messageQuery.replace(/(\r\n|\n|\r)/gm,"; "));
+                            }, (e) => {
+                                logger.error('Error: ', e)
+                            })
+                        }).catch((err) => {
+                            logger.error(err);
+                        });;
+                } else {
+                    logger.warn('Unsupported type');
+                    const data = {
+                        to: userId,
+                        messages: [{
+                            type: "text",
+                            text: "Sorry, we only support text and image :(\nExample question:\nx^2+x-1=0\nCO2+H2O=C6H12O6\nPresident of Indonesia\n\ntype 'help' for more info",
+                        }],
+                    };
+                    logger.info(data);
+                    axios.post(`https://api.line.me/v2/bot/message/push`, data, {
+                            headers: {
+                                Authorization: `Bearer ${config.lineToken}`,
+                            },
+                        }).then((resp) => {
+                            logger.info('Reply success');
+                            logger.info(resp.data);
+                        }).catch((err) => {
+                            logger.error(err.data);
+                        });;
+                }
             }
         }
     });
