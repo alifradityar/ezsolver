@@ -238,16 +238,18 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             const sourceType = event.source.type;
             const userId = event.source.userId || event.source.roomId || event.source.groupId;
             const isGroup = sourceType === "room" || sourceType === "group";
-            if (isGroup && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
+            if (isGroup && event.message.text && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
                 return;
             }
-            if (event.message.text.toLowerCase().startsWith("ez")) {
+            if (event.message.text && event.message.text.toLowerCase().startsWith("ez")) {
                 event.message.text = event.message.text.substring(2);
             }
-            if (event.message.text.toLowerCase().startsWith("ezsolver")) {
+            if (event.message.text && event.message.text.toLowerCase().startsWith("ezsolver")) {
                 event.message.text = event.message.text.substring(8);
             }
-            event.message.text = event.message.text.trim();
+            if (event.message.text) {
+                event.message.text = event.message.text.trim();
+            }
             if (messageType === 'text' && event.message.text.toLowerCase() === 'help') {
                 let exampleText = "Enter text or upload the picture of your math equation, chemistry equation, or anything!\nExample question:\n- x^2+x-1=0\n- CO2+H2O=C6H12O6\n- President of Indonesia\n\ntype 'help' for more info";
                 if (isGroup) {
