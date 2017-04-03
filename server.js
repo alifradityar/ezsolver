@@ -236,7 +236,7 @@ apiRoutes.post('/lineWebhook', (req, res) => {
             const messageType = event.message.type;
             const messageId = event.message.id;
             const sourceType = event.source.type;
-            const userId = event.source.userId || event.source.roomId || evet.source.groupId;
+            const userId = event.source.userId || event.source.roomId || event.source.groupId;
             const isGroup = sourceType === "room" || sourceType === "group";
             if (isGroup && !(event.message.text.toLowerCase().includes("ez") || event.message.text.toLowerCase().includes("ezsolver"))) {
                 return;
